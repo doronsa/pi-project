@@ -1,0 +1,61 @@
+https://learn.sparkfun.com/tutorials/raspberry-gpio/c-wiringpi-setup
+https://www.electronicsforu.com/electronics-projects/setting-qt-software-on-raspberry-pi
+https://askubuntu.com/questions/1157046/cant-find-qt5designer-qt5svg-and-qt5x11extras
+install qt 5
+-----------------------------------
+cros compale
+https://github.com/neuronalmotion/qtrpi
+----------------------------------
+$ Sudo apt-get install gcc
+
+Use the following commands to install Qt Creator:
+
+$ sudo apt-get update
+sudo apt-get upgrade
+apt install libqt5charts5-dev
+sudo apt install qttools5-dev
+
+
+install qtbase5-dev libqt5x11extras5-dev libqt5svg5-dev qtdeclarative5-dev libqt5charts5-dev libmuparser-dev
+sudo apt-get install qtcreator
+sudo apt-get install git-core
+sudo apt-get install subversion
+
+
+
+-------------------------
+Install Wiring Pi
+git clone https://github.com/WiringPi/WiringPi.git
+cd WiringPi
+git pull origin
+./build
+
+-------------------------------------------
+install pi app
+wget -qO- https://raw.githubusercontent.com/Botspot/pi-apps/master/install | bash
+
+app for install
+sudo apt-get install mc
+subline text --from pi-app
+				gpart
+-------------------------------------------
+https://snapcraft.io/install/nps-svn-client/raspbian
+
+install subvertion
+
+sudo apt update
+sudo apt install snapd
+sudo reboot
+snapd:
+sudo snap install core
+
+Install NPS Subversion Client
+To install NPS Subversion Client, simply use the following command:
+sudo snap install nps-svn-client
+for qt
+https://docs.gitlab.com/omnibus/settings/rpi.html
+
+  -----------------------------------------
+  githab
+https://github.com/ys7yoo/PiTutorial
+  
