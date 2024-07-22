@@ -25,13 +25,14 @@ public:
     int DebagTimerHIT = 0;
     int GpioLhgit = 25;
     bool SabatStatus = false;
-    int OnOFF = 1;
+//    int OnOFF = 1;
     bool LhegitStatus = false;
     //int SabatVentaTimeOff = 0;
     int statutusAutoplaStop = 0;
     int Debugcounter = 0;
     QString SonarValue;
     //void SetUpTimeSetingFromConfigFile(void);
+    void HDControl(int hd,bool val);
     void LoadSeting();
     void SetNewSetingFile();
     int ChackSetingFile();

@@ -31,7 +31,7 @@
 #include <QFile>
 #include <QTextStream>
 
-QString VERSION = "VERSION 3.3";
+QString VERSION = "VERSION 3.5";
 #define MAXTIMINGS	85
 #define DHTPIN		4
 int GpioHit = 17;
@@ -51,7 +51,10 @@ int SabatVentaTimeOff = 0;
 bool SabatTimeOnOff = 0;
 bool ok;
 int dht11_dat[5] = { 0, 0, 0, 0, 0 };
+int OnOFF = 1;
+
 using namespace std;
+void DebugMssg(QString mssg);
 QSettings settings2("/home/pi/Desktop/venta.ini", QSettings::IniFormat);
 void timerVentaHendel(void);
 void timerHitHendel(void);
@@ -59,7 +62,47 @@ QString GetConfigMode(void);
 
 //QSettings settings("/home/pi/Desktop/NewSonar.ini", QSettings::IniFormat);
 void SaveToLogfile(QString mssge);
+bool on = 1;
+bool off = 0;
+//const  VANTAHW  1
+//const  LHGITHW  2
+//const  HITH     3
+void MainWindow::HDControl(int hd,bool val)
+{
+    QString msval = "from HDControl :";
+    switch (hd) {
+    case 1:
+        digitalWrite( GpioVanta, val );
+        msval = msval + "Vanta";
+        msval = msval + "val :" + QString::number(val)+"\n";
+        DebugMssg(msval);
+        break;
+    case 2:
+        digitalWrite( GpioLhgit, val );
+        msval = msval + "Lhgit";
+        msval = msval + "val :" + QString::number(val)+"\n";
+        DebugMssg(msval);
+        break;
+    case 3:
+        digitalWrite( GpioHit, val );
+        msval = msval + "HIT";
+        msval = msval + "val :" + QString::number(val)+"\n";
+        DebugMssg(msval);
+        break;
+    default:
+        break;
+    }
 
+}
+
+void DebugMssg(QString mssg)
+{
+    mssg = mssg + "SabatVentaTimeOff :" + QString::number(SabatVentaTimeOff)+"\n";
+    mssg = mssg + "SabatTimeOnOff :" + QString::number(SabatTimeOnOff)+"\n";
+    mssg = mssg + "OnOFF :"+ QString::number(OnOFF)+"\n";
+
+    SaveToLogfile(mssg);
+}
 
 void MainWindow::ReadFile()
 {
@@ -88,19 +131,19 @@ void MainWindow::ReadFile()
 
 void SaveToLogfile(QString mssge)
 {
-    QTime Timet_h = QTime::currentTime();
-    QDate DateT = QDate::currentDate();
-    QString Date_Time = DateT.toString();
+//    QTime Timet_h = QTime::currentTime();
+//    QDate DateT = QDate::currentDate();
+//    QString Date_Time = DateT.toString();
 
-    QFile file("/home/pi/Desktop/log.txt");
-    if(file.open(QIODevice::Append | QIODevice::Text))
-    {
-         QTextStream out(&file);
-         mssge = mssge +" " + Timet_h.toString("hh:mm:ss") + " " + Date_Time;
-         out << mssge << "\n";
-         qDebug()<<mssge<< "\n";
-    }
-    file.close();
+//    QFile file("/home/pi/Desktop/log.txt");
+//    if(file.open(QIODevice::Append | QIODevice::Text))
+//    {
+//         QTextStream out(&file);
+//         mssge = mssge +" " + Timet_h.toString("hh:mm:ss") + " " + Date_Time;
+//         out << mssge << "\n";
+//         qDebug()<<mssge<< "\n";
+//    }
+//    file.close();
 
 }
 
@@ -306,9 +349,11 @@ MainWindow::MainWindow(QWidget *parent)
     pinMode(GpioHit, OUTPUT);
     pinMode(InputGpio, INPUT);
     pinMode(GpioLhgit, OUTPUT);
+//    HDControl(GpioVanta,0);
+//    HDControl(GpioHit,0);
     digitalWrite(GpioVanta,false);
     digitalWrite(GpioHit,false);
-    //digitalWrite(GpioLhgit,false);
+    digitalWrite(GpioLhgit,false);
     DebagTimerCount = 30*1000*60;
     DebagTimer = 0;
     ui->temp_label_OFF->hide();
@@ -389,6 +434,7 @@ QString GetConfigMode(void)
 
 void MainWindow::StopTimerVenta()
 {
+    DebugMssg("423 From StopTimerVenta:\n");
     if(SabatVentaTimeOff == 0)
 
     {
@@ -400,10 +446,11 @@ void MainWindow::StopTimerVenta()
             DebagTimer = 1;
             DebagTimerCount = timeadd*60;
             ui->temp_lcdNumber_5->display(DebagTimerCount/60);
+            DebugMssg("From StopTimerVenta:\n");
         }else {
                     int SonatTrhsold = ui->horizontalScrollBarSonar->value();
                     int SonarVal = ui->temp_lcdNumber_sonar->value();
-
+                    DebugMssg("438 From StopTimerVenta:\n");
                     qDebug()<<"SonatTrhsold = " << SonatTrhsold <<"SonarVal "<<SonarVal;
                     if(SonarVal < SonatTrhsold)
                     {
@@ -412,17 +459,22 @@ void MainWindow::StopTimerVenta()
                         DebagTimer = 1;
                         DebagTimerCount = timeadd1*60;
                         ui->temp_lcdNumber_5->display(DebagTimerCount/60);
-
-                    }else {
-                        ui->checkBoxVenta->setChecked(false);
-                        digitalWrite(GpioVanta, LOW);
-                        digitalWrite(GpioLhgit,false);
-                        VantaTimer->stop();
-                        DebagTimerCount = 0;
-                        DebagTimer = 0;
-                        ui->temp_label_OFF->show();
-                        ui->temp_label_ON->hide();
-                        LhegitStatus = false;
+                        DebugMssg("447 From StopTimerVenta:\n");
+                    }else
+                        {
+                            ui->checkBoxVenta->setChecked(false);
+    //                        HDControl(GpioVanta,0);
+    //                        HDControl(GpioLhgit,0);
+                            digitalWrite(GpioVanta,false);
+                            digitalWrite(GpioLhgit,false);
+                            VantaTimer->stop();
+                            DebagTimerCount = 0;
+                            DebagTimer = 0;
+                            ui->temp_label_OFF->show();
+                            ui->temp_label_ON->hide();
+                            LhegitStatus = false;
+                            SabatVentaTimeOff = 0;
+                            DebugMssg("460From StopTimerVenta:\n");
                     }
                }
     }
@@ -432,6 +484,7 @@ void MainWindow::StopTimerHit()
 {
     ui->checkBoxHit->setChecked(false);
     LhegitStatus = false;
+//    HDControl(GpioHit,0);
     digitalWrite(GpioHit,false);
     HitTimer->stop();
     DebagTimerCounthit = 0;
@@ -460,6 +513,7 @@ void MainWindow::GetGPIO()
         delay(500);
         if (NewValue == 0 && LhegitStatus == false )
         {
+//            HDControl(GpioLhgit,1);
             digitalWrite(GpioLhgit,1);
             LhegitStatus = true;
             if(SabatStatus == 0 )//&& oldValue == 0)
@@ -475,6 +529,7 @@ void MainWindow::GetGPIO()
                 //if(NewValue == 1)//
                 if (digitalRead(InputGpio) == 1)
                 {
+//                    HDControl(GpioLhgit,0);
                     digitalWrite(GpioLhgit,0);
                     LhegitStatus = false;
 
@@ -495,8 +550,10 @@ void MainWindow::on_pushButton_venta_clicked()
             DebagTimer = 1;
             DebagTimerCount = ui->spinBoxTimeVanta->value()*60;
             ui->temp_lcdNumber_5->display(DebagTimerCount/60);
+//            HDControl(GpioLhgit,1);
+//            HDControl(GpioVanta,1);
             digitalWrite(GpioLhgit,true);
-            digitalWrite(GpioVanta, true);
+            digitalWrite(GpioVanta,true);
             ui->temp_label_OFF->hide();
             ui->temp_label_ON->show();
             settings2.beginGroup("Mode");
@@ -505,15 +562,17 @@ void MainWindow::on_pushButton_venta_clicked()
 
         }else{
 
+//                HDControl(GpioVanta,0);
+//                HDControl(GpioLhgit,0);
                 digitalWrite(GpioVanta, false);
+                digitalWrite(GpioLhgit,false);
                 ui->checkBoxVenta->setChecked(false);
                 ui->pushButton_stop_all->click();
                 VantaTimer->stop();
                 DebagTimerCount = 0;
                 DebagTimer = 0;
                 ui->temp_label_OFF->show();
-                ui->temp_label_ON->hide();
-                digitalWrite(GpioLhgit,false);
+                ui->temp_label_ON->hide();               
                 LhegitStatus = false;
 
              }
@@ -533,6 +592,7 @@ void MainWindow::on_pushButton_hit_clicked()
     {
         ui->checkBoxHit->setChecked(true);
         HitTimer->start(ui->spinBoxTimeHit->value()*1000*60);
+//        HDControl(GpioHit,1);
         digitalWrite(GpioHit, HIGH);
         DebagTimerCounthit = ui->spinBoxTimeHit->value()*60;
         ui->temp_lcdNumber_HIT->display(DebagTimerCounthit/60);
@@ -544,6 +604,7 @@ void MainWindow::on_pushButton_hit_clicked()
         settings2.endGroup();
     }else {
             ui->checkBoxHit->setChecked(false);
+//            HDControl(GpioHit,0);
             digitalWrite(GpioHit, LOW);
             HitTimer->stop();
             DebagTimerCounthit = 0;
@@ -567,13 +628,16 @@ void MainWindow::ControlSabatTime()
                 DebagTimer = 1;
                 if (OnOFF == 1)
                 {
+//                    HDControl(GpioVanta,1);
                     digitalWrite(GpioVanta,1);
+                     digitalWrite(GpioLhgit,1);
                     ui->temp_label_OFF->hide();
                     ui->temp_label_ON->show();
                     OnOFF = 0;
                     qDebug()<<"from ControlSabatTime on"<< "\n";
                 }else{
                         //DebagTimerCount = 0;
+//                        HDControl(GpioVanta,0);
                         digitalWrite(GpioVanta,0);//now it 0
                         ui->temp_label_OFF->show();
                         ui->temp_label_ON->hide();
@@ -588,7 +652,10 @@ void MainWindow::ControlSabatTime()
         ui->temp_lcdNumber_5->display(DebagTimerCount/60);
         qDebug()<<" from ControlSabatTime SabatVentaTimeOff ="<<SabatVentaTimeOff;
     }else{
-                SaveToLogfile("SabatTimeOnOff = 1 all off");
+//                SaveToLogfile("SabatTimeOnOff = 1 all off");
+                DebugMssg("From ControlSabatTime:\n");
+//                HDControl(GpioVanta,0);
+//                HDControl(GpioLhgit,0);
                 digitalWrite(GpioVanta,0);
                 digitalWrite(GpioLhgit,0);
                 ui->temp_label_OFF->show();
@@ -611,6 +678,8 @@ void MainWindow::on_pushButton_shbat_clicked()
         ui->temp_label_OFF->hide();
         ui->temp_label_ON->show();
         //temp debug
+//        HDControl(GpioLhgit,1);
+//        HDControl(GpioVanta,1);
         digitalWrite(GpioLhgit,true);
         digitalWrite(GpioVanta,true);
         LhegitStatus = true;
@@ -620,12 +689,15 @@ void MainWindow::on_pushButton_shbat_clicked()
         ControlSabatTime();
 
     }else{
+//            HDControl(GpioLhgit,0);
+//            HDControl(GpioVanta,0);
             digitalWrite(GpioVanta,false);
+            digitalWrite(GpioLhgit,false);
             SabatTimer->stop();
             ui->checkBoxSabat->setChecked(false);
             SabatStatus = false;
             //DeleteFile();
-            digitalWrite(GpioLhgit,false);
+
             LhegitStatus = false;
             ui->temp_label_OFF->show();
             ui->temp_label_ON->hide();
@@ -639,8 +711,9 @@ void MainWindow::on_pushButton_stop_all_clicked()
     if (status == 0)
     {
         LhegitStatus = false;
-        //digitalWrite(GpioLhgit,FALSE);
         ui->checkBoxStopAll->setChecked(true);
+//        HDControl(GpioLhgit,0);
+//        HDControl(GpioVanta,0);
         digitalWrite(GpioVanta,false);
         digitalWrite(GpioHit,false);
         DebagTimerCount = 0;
@@ -658,6 +731,7 @@ void MainWindow::on_pushButton_stop_all_clicked()
         ui->checkBoxVenta->setChecked(false);
         ui->temp_label_OFF->hide();
         ui->temp_label_ON->hide();
+        SabatVentaTimeOff = 0;
 //        time_on = false;
         //DeleteFile();
 
@@ -719,9 +793,14 @@ void MainWindow::showTime()
     //QTime Timet_h = QTime::currentTime();
     QString TimeH = DateTimetimer.toString("hh");
     int time_int = TimeH.toInt();
+    int timeval = ui->spinBoxSabatOff->value();
+    if (timeval == 24)
+        timeval = 0;
     //qDebug()<<"  TimeH"<<TimeH << " time_int "<< time_int;
     QString mssg;
-        if((time_int == ui->spinBoxSabatOff->value())&&(setuplhitoff == 0))//if time off
+    if(SabatVentaTimeOff == 1)
+    {
+        if((time_int == timeval)&&(setuplhitoff == 0))//if time off
         {
             SabatTimeOnOff = 1;
             setuplhiton = 0;
@@ -745,7 +824,7 @@ void MainWindow::showTime()
 //                    SaveToLogfile(mssg);
                 }
             }
-
+    }
 }
 
 
@@ -801,6 +880,7 @@ void MainWindow::on_horizontalScrollBarTimeAdd_valueChanged(int value)
 void MainWindow::on_pushButtonLhigt_clicked()
 {
     digitalWrite(GpioLhgit,false);
+//    HDControl(GpioLhgit,0);
 }
 
 void MainWindow::on_horizontalScrollBarSabaton_valueChanged(int value)
